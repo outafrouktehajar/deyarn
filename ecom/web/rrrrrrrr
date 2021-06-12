@@ -1,0 +1,475 @@
+
+<?php
+if(!isset($_SESSION['user']))
+{
+      if(isset($_POST['login']))
+      {
+        $logemail=$_POST['logemail'];
+        $logpassword=$_POST['logpassword'];
+
+        $requete="SELECT * FROM `user` WHERE `email`='$logemail' AND `password`='$logpassword'";
+        $reponse=$bdd->query($requete);
+        
+        if($data=$reponse->fetch())
+        {
+          $_SESSION['utilisateur']=$data['nom'];
+
+          ?>
+      <div class="alert alert-success" role="alert">
+           <?php echo "welcome ".$_SESSION['user'];?><br>
+           <a href="?logout">Logout</a>
+      </div>
+
+          <?php
+          
+        }
+        else
+        {
+          
+          ?>
+          <div class="alert alert-danger" role="alert">
+           Erreur de connexion !!!
+          </div>
+            <!-- Default form login -->
+      
+          <?php
+          require "web/logi.html";
+        }
+      }
+      else
+      {
+          require "web/logi.html";
+      }
+
+}
+else
+{
+?>
+      <div class="alert alert-success" role="alert">
+           <?php echo "welcome: ".$_SESSION['user'];?><br>
+           <a href="?logout">Logout</a>
+      </div>
+<?php
+}
+?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$(document).ready(function(){
+
+  $(".sk-cube-grid").fadeOut(2000, function () {
+        $("body").css("overflow", "auto");
+        $(".loading-page").fadeOut(2000).remove();
+    })
+
+
+
+$('#btnsubmit').click(function(){
+
+  var email=$('#chemail').val();
+  var password=$('#chpw').val();
+
+  $.post('web/login.php',{"email":email,"pw":password},function(data){
+    
+    $('#reponseLogin').html(data)
+    
+  })
+
+
+})
+$('#btnlogup').click(function(event){
+
+          var formData = {
+            'chename'              : $('#chename').val(),
+            'chemail'            : $('#chemail').val(),
+            'chpw'        :$('chpw').val()
+        };
+
+        // process the form
+        $.ajax({
+            type        : 'POST', // define the type of HTTP verb we want to use (POST for our form)
+            url         : 'web/signup1.php', // the url where we want to POST
+            data        : formData, // our data object
+            dataType    : 'html', // what type of data do we expect back from the server
+            encode       : true
+        })
+
+            .done(function(data) {
+
+
+          $('#reponseLogin').html(data)
+      $('#btnlogout').html('<a href="?logout">Logout</a>');
+      alert('passer la commande');
+
+            });
+
+
+        event.preventDefault();
+  })
+
+
+
+
+
+
+
+$('#btnsup').click(function(){
+
+    var name=$('#form2').val();
+  var email=$('#form14').val();
+  var password=$('#form5').val();
+
+  $.post('web/signup1.php',{"name":name,"email":email,"pw":password},function(data){
+    alert('hello')
+    
+    $('#reponseLogin').html(data)
+    
+  })
+
+
+})
+
+
+
+
+$( 'navbar-nav a' ).on( 'click', function () {
+  $( '.navbar-nav' ).find( 'li.active' ).removeClass( 'active' );
+  $( this ).parent( 'li' ).addClass( 'active' );
+});
+  /////////Menu categories//////////////////
+  $("#accordian h6").click(function(){
+    //slide up all the link lists
+    $("#accordian ul ul").slideUp(100);
+    //slide down the link list below the h3 clicked - only if its closed
+    if(!$(this).next().is(":visible"))
+    {
+      $(this).next().slideDown(100);
+    }
+  })
+
+
+
+  ///////////carousel//////////////////////
+  $('.owl-carousel').owlCarousel({
+        loop:true,
+        margin:5,
+        nav:true,
+        responsive:{
+            0:{
+                items:1
+            },
+            600:{
+                items:2
+            },
+            1000:{
+                items:4
+            }
+        }
+    });
+
+  ///////////detail/////////////////
+  $('.divCorps').on('click','.btndetail',function(){
+
+    $('#modaldetail .nom-prd').text($(this).parents(".card").find('.card-title').text())
+    $('#modaldetail .prix-prd').text($(this).parents(".card").find('.prixprd').text())
+    $('#modaldetail .description-prd').text($(this).parents(".card").find('.card-text').text())
+    
+    $('#modaldetail .img-prd').attr('src',$(this).parents(".card").find('.card-img-top').attr('src'))
+    //$('#modaldetail .heading').text($(this).parents(".card").find('.card-title').text
+
+
+
+    var idprd=$(this).parents(".card").find('.idproduit').val();
+
+      $.get('web/produitsimil.php',{"idprd":idprd},function(data){
+      $('#similprd').html(data);
+
+    })
+        $('#modaldetail').modal();
+  })
+
+
+     $('.divCorps').on('click','.btnpanier',function(){
+
+      var idprd=$(this).parents(".card").find('.idproduit').val();
+    $.get('web/basket.php',{"idprd":idprd,"action":"ajouter"},function(data)
+      {
+        $('.bagshp .badge').html(data)
+      })
+    
+
+
+
+  $('.bagshp').click(function()
+{
+  $.get("web/basketdeta.php",null,function(data){
+
+    $('.divglo').html(data);
+
+  })
+})
+
+
+
+   $('.divglo').on('click','.btnup',function(){
+
+  var idprd=$(this).attr('rel');
+
+    $.get('web/basket.php',{"idprd":idprd,"action":"up"},function()
+      {
+        $.get("web/basketdeta.php",null,function(data){
+
+            $('.divglo').html(data);
+
+          })
+      })
+  })
+
+   $('.divglo').on('click','.btndown',function(){
+
+  var idprd=$(this).attr('rel');
+    $.get('web/basket.php',{"idprd":idprd,"action":"down"},function()
+      {
+        $.get("web/basketdeta.php",null,function(data){
+
+            $('.divglo').html(data);
+
+          })
+      })
+  })
+
+
+   $('.divglo').on('click','.btnSuppPanier',function(){
+
+  var reponse=confirm('Voulez vous vraiment supprimer cet article?')
+  if(reponse==true)
+  {
+    var idprd=$(this).attr('rel');
+    
+    $.get('web/basket.php',{"idprd":idprd,"action":"supprimer"},function()
+      {
+        $.get("web/basketdeta.php",null,function(data){
+            $('.divglo').html(data);
+          })
+      })
+  }
+  
+  })
+
+
+
+
+
+  ////////////////AJAX produit///////////////
+  $('.lienSousCat').click(function()
+  {
+    //afficher loading
+    $('.divCorps').html("<img src='img/loading.gif'>");
+
+    //recuperer l'id de la souscat a afficher
+    var idsoucat=$(this).attr('rel');
+
+    //appel ajax pour ramener les infos de cette souscat
+    $.get('web/produits-yarns.php',{"souscat":idsoucat},function(data){
+      //affichage des info dans le corps  
+      $('.divCorps').html(data);
+
+    })
+
+  })
+
+////////////////AJAX pagination///////////////
+$('.divCorps').on('click','.page-link',function(){
+
+    //afficher loading
+    $('.divCorps').html("<img src='img/loading.gif'>");
+    //recuperer l'id de la souscat a afficher
+    var chemain=$(this).attr('rel');
+    chemain=chemain.replace(/ /g,'');
+    var tabchemain = chemain.split("&");
+  
+      if(tabchemain.length>1)
+      {
+        get1=tabchemain[0].split('=');
+        get2=tabchemain[1].split('=');
+        var idsoucat=get1[1]
+        var page=get2[1]
+            $.get('web/produits-yarns.php',{"souscat":idsoucat,"page":page},function(data){
+              //affichage des info dans le corps  
+              $('.divCorps').html(data);
+
+            })
+      }
+      else
+      {
+        get1=tabchemain[0].split('=');
+        var page=get1[1]
+        $.get('web/produits-yarns.php',{"page":page},function(data){
+              //affichage des info dans le corps  
+              $('.divCorps').html(data);
+
+            })  
+      }
+
+})
+
+//////////////////////////////////////////////////////////////////////Commander
+$('.divglo').on('click','#btnCommander',function(){
+
+  $.get('web/commander.php',null,function(data)
+  {
+    if(data==1)
+    {
+      alert('passer la commande');
+    }
+    else
+    {
+      $('#myModal').modal('show');
+    }
+  })
+
+
+
+///////////////////////////
+})
+$('.divglo').on('click','#btnCommander',function(){
+
+  $.get('web/commander.php',null,function(data)
+  {
+    if(data==1)
+    {
+      alert('passer la commande');
+    }
+    else
+    {
+      $('#myModal').modal('show');
+    }
+  })
+
+})
+
+
+
+      $('.divCorps').on('click','.btnlk',function(){
+
+          $.get('web/commander.php',null,function(data)
+        {
+              if(data==1)
+              {
+
+                var idprd=$(this).parents(".card").find('.idproduit').val();
+              $.get('web/like.php',{"idprd":idprd,"action":"ajouter"},function(data)
+                {
+                  $('.bagshp .badge').html(data)
+                })
+
+              }
+              else
+              {
+                $('#myModal').modal('show');
+              }
+        })
+
+            })
+})
+     })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<center>
+ 
+    <?php
+    $totalprix=0;
+    for ($i=0; $i <count($_SESSION['like']['id']) ; $i++) 
+    { 
+        $idprd=$_SESSION['like']['id'][$i];
+        $reponse=$bdd->query("SELECT nom, prix FROM produits WHERE id = '$idprd' ");
+              if($data=$reponse->fetch())
+               {
+            ?>
+   <div class="card">
+
+              <!--Card image-->
+             
+              <!--Card content-->
+   <div class="card-body">
+
+                <!-- Container -->
+   <div class="d-block d-md-flex">
+
+                  <!-- Column -->
+                  <div class="p-3 flex-1">
+
+                        <img src="photoPrd/<?php echo $idprd ?>.jpg" width="100"></td>
+
+                          </div>
+                  <!-- Column -->
+
+                  <!-- Column -->
+                  <div class="p-3 flex-1">   
+                    <h4><?php echo $data['nom'] ?></h4>
+
+                       </div>
+            <!-- Column -->
+
+            <!-- Column -->
+                <div class="p-3 flex-1">
+
+                  
+                    <h4><?php echo $data['prix'] ?> Dh</h4>
+                    
+                    </div>
+                <!-- Column -->
+            <div class="p-3 flex-1">
+                     <h4> <i class="fas fa-trash-alt btnSuppPanier"  style="float: right;" rel="<?php echo $idprd ?>"></i></h4>
+                     </div>
+       <!-- Container -->
+       }
+       }
+    <?php
+ } 
+?>   
+     
+ </div>
+</div>
+</div>
+</center>
+
+
+
+
+
+
